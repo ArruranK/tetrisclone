@@ -173,9 +173,6 @@ def runGame():
     return "Menu"
 
 
-def addBackground():
-    print("Hi")
-
 def getPlayerMove(board, piece):
     mouse = pygame.mouse.get_pos()
     for event in pygame.event.get():
