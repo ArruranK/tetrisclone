@@ -16,7 +16,7 @@ COLOURS = [(0,200,200),(200,200,0),(128,0,128),(0,128,0),(0,0,200),(200,0,0),(20
 WIN = pygame.display.set_mode((SCRN_WIDTH,SCRN_HEIGHT))
 pygame.display.set_caption("Tetris clone (by Arruran.K)")
 
-class Board:
+class Board: # board class to keep track of the tetris board and the tiles on it as well as the score
     def __init__(self):
         self.score = 0
         self.board = []
@@ -26,17 +26,17 @@ class Board:
             for j in range(10):
                 self.board[i].append(Tile())
     
-    def addPiece(self, piece):
+    def addPiece(self, piece): # freezes the current tetrimono onto the board
         for tile in piece.shape:
             self.board[tile[0]][tile[1]].value = 1
             self.board[tile[0]][tile[1]].colour = piece.colour
-    def removeFullRows(self):
+    def removeFullRows(self): # checks for full rows and removes them, then calls the dropDown function
         for row in self.board:
             if sum([tile.value for tile in row]) == 10:
                 row = [tile.reset() for tile in row]
                 self.score+=1000
                 self.dropDown()
-    def dropDown(self):
+    def dropDown(self): # moves the tiles on the board down by one based on which row was removed
         for i in range(len(self.board)-1,1,-1):
             if sum([tile.value for tile in self.board[i]]) == 0:
                 for j in range(i,0,-1):
@@ -47,7 +47,7 @@ class Board:
                 break
 
 
-class Tile:
+class Tile: # tile class to keep track of the colour of a tile and whether it is being occupied
     def __init__(self):
         self.value = 0
         self.colour = (0,0,0)
@@ -57,7 +57,7 @@ class Tile:
         self.colour = (0,0,0)
 
 
-class Piece:
+class Piece: # piece class to get random tetrimonos
     def __init__(self):
         self.tetrimono = random.choice(SHAPE_LIST)
         self.coords = self.tetrimono[0]
@@ -74,11 +74,11 @@ class Piece:
         self.shape = [(coords[0]+self.offset[0],coords[1]+self.offset[1]) for coords in self.coords]
         self.colour = random.choice(COLOURS)
     
-    def move(self,x,y):
+    def move(self,x,y): # moves the tetrimono sideways or downwards
         self.offset = (self.offset[0]+y,self.offset[1]+x)
         self.shape = [(coords[0]+self.offset[0],coords[1]+self.offset[1]) for coords in self.coords]
     
-    def rotate(self):
+    def rotate(self): # rotates the tetrimono clockwise 
         if self.type != "O":
             self.coords = [(-coord[1],coord[0]) for coord in self.coords]
             self.shape = [(coords[0]+self.offset[0],coords[1]+self.offset[1]) for coords in self.coords]
@@ -90,7 +90,7 @@ def main():
     pygame.font.init()
     state = "Menu"
     run = True
-    while run:
+    while run: # main loop to run the game, runs different loops based on the state of the game
         WIN.fill((0,0,0))
         clock.tick(60)
         if state == "Menu":
@@ -102,7 +102,7 @@ def main():
             run = False
 
 
-def runMenu():
+def runMenu(): # runs the loop which shows the menu. Recieves input on whether the user has quit the window or pressed the play button
     run = True
     pygame.draw.rect(WIN,(245,245,220),pygame.Rect(275, 400, 150, 50))
     font = pygame.font.Font('freesansbold.ttf', 32)
@@ -122,8 +122,8 @@ def runMenu():
 
         pygame.display.update()
 
-def runGame():
-    board = Board()
+def runGame(): # runs the game
+    board = Board() 
     piece = Piece()
     running = True
     clock = pygame.time.Clock()
@@ -140,25 +140,25 @@ def runGame():
         moves = font.render('Use wasd or arrow keys to move pieces (up to rotate a piece)', True, (245,245,220))
         WIN.blit(moves,(50,650))
         pygame.draw.rect(WIN,(245,245,220),pygame.Rect(45, 45, 70, 35))
-        back = font.render('BACK', True, (0,0,0))
+        back = font.render('BACK', True, (0,0,0))  # button to go back to the menu
         WIN.blit(back,(50,50))
 
-        if speed>2:
+        if speed>2: # changes game speed as score increases
             speed = 20 - (board.score//3000) 
 
-        if tick%4==0:
+        if tick%4==0: # checks for player move every four ticks 
             move = getPlayerMove(board, piece)
             if move == "Quit":
                 return "Quit"
             elif move == "Menu":
                 return "Menu"
 
-        if tick%speed == 0:
+        if tick%speed == 0: # drops the tetrimono down by one based on the speed of the game currently
             piece.move(0,1)
             if not validMove(piece, board):
                 piece.move(0,-1)
 
-                if outOfBounds(piece):
+                if outOfBounds(piece): # if a piece cannot be placed in bounds, game ends
                     running = False
 
                 board.addPiece(piece)
@@ -173,7 +173,7 @@ def runGame():
     return "Menu"
 
 
-def getPlayerMove(board, piece):
+def getPlayerMove(board, piece): # makes an action based on user input and returns the state of the game
     mouse = pygame.mouse.get_pos()
     for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -211,13 +211,13 @@ def getPlayerMove(board, piece):
     return "nothing"
 
 
-def outOfBounds(piece):
+def outOfBounds(piece): # checks if a piece is positioned out of bounds (if a piece cannot be partially placed within the board)
     for tile in piece.shape:
         if tile[0]>=1:
             return False
     return True
 
-def validMove(piece, board):
+def validMove(piece, board): # checks if a move made by the player is valid
     for tile in piece.shape:
         if tile[0]>20 or tile[1]<0 or tile[1]>9:
             return False
@@ -226,7 +226,7 @@ def validMove(piece, board):
                 return False
     return True
 
-def drawBoard(board, piece):
+def drawBoard(board, piece): # draws the tetris board
     x = 225
     y = 100 
     for i in range(21):
